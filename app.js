@@ -13,7 +13,7 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     databaseURL: 'https://msgdam-3ee9f.firebaseio.com/'
 });
-
+//Aqui vamos a guardar en estas varibles la informacion del ultimo registro
 var db = admin.database();
 var ref = db.ref("/registro");
 var id = null;
@@ -39,14 +39,42 @@ app.use(express.static(__dirname + '/html'));
 
 //extended: false significa que parsea solo string (no archivos de imagenes por ejemplo)
 app.use(bodyParser.urlencoded({ extended: false }));
+//Creamos la accion que hara el boton, en cual enviara la notificacion los datos guardados antes.
+app.post('/borrarTk',(req, res) => {
+    let tokenMio= req.body.toke
+    let nickd=req.body.nick
+    let mens= req.body.msg
+    let pagina = '<!doctype html><html><head></head><body>';
+    
+    var mensaje = {
+
+ token:tokenMio,
+ notification: {
+     body:mens,
+     title:"Ha sido dado de baja: "+nickd
+ }
+};
+
+// Send a message to the device corresponding to the provided
+// registration token.
+admin.messaging().send(mensaje)
+ .then((response) => {
+   // Response is a message ID string.
+   console.log('Successfully sent message:', response);
+ })
+ .catch((error) => {
+   console.log('Error sending message:', error);
+ });
+ 
+ pagina += '</body></html>';
+   res.send(pagina);
+});
+
 
 app.post('/enviar', (req, res) => {
 
    let pagina = '<!doctype html><html><head></head><body>';
-  
-// This registration token comes from the client FCM SDKs.
-console.log("KK:" + tokenpropio);
-// See documentation on defining a message payload.
+
 var message = {
 
  token: tokenpropio,
@@ -57,8 +85,8 @@ var message = {
  }
 };
 
-// Send a message to the device corresponding to the provided
-// registration token.
+ 
+ 
 admin.messaging().send(message)
  .then((response) => {
    // Response is a message ID string.
